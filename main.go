@@ -3,8 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	"os"
 	"mq/internal"
+	"mq/internal/config"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -64,6 +67,28 @@ func parseCommandLineArguments(argv []string) error {
 		req := fmt.Sprintf("add %v", uri);
 		err = internal.RequestWithoutResponse(req);
 	case "see":
+		config, err := config.GetConfig();
+		if err != nil {
+			return err;
+		}
+		basepath := config.BasePath;
+
+		input := ".";
+		if len(argv) == 2 {
+			input = argv[1];
+		}
+		path := filepath.Join(basepath, input);
+		entries, err := os.ReadDir(path);
+		if err != nil {
+			return err;
+		}
+		for _,e := range entries {
+			name := e.Name();
+			if !strings.HasPrefix(name, ".") {
+				fmt.Println(name);
+			}
+		}
+
 	case "list", "ls":
 		plainResp, err := internal.Request("playlistinfo");
 		if err != nil {
