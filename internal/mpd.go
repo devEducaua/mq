@@ -5,10 +5,16 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"mq/internal/config"
 )
 
 func initializeMpdConnection() (*net.TCPConn, error) {
-	addr, err := net.ResolveTCPAddr("tcp", "localhost:6600");
+	config, err := config.GetConfig();
+	if err != nil {
+		return nil, err;
+	}
+
+	addr, err := net.ResolveTCPAddr("tcp", config.Addr);
 	if err != nil {
 		return nil, err;
 	}
