@@ -39,6 +39,8 @@ func parseCommandLineArguments(argv []string) error {
 		err = commands.ToggleCommand(togglecommand);
 	case "stop":
 		err = mpd.RequestWithoutResponse("stop");
+	case "clear":
+		err = mpd.RequestWithoutResponse("clear");
 	case "prev":
 		err = mpd.RequestWithoutResponse("previous");
 	case "next":
