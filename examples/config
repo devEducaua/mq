@@ -1,2 +1,3 @@
 addr: localhost:6600
-basepath: ~/hdd/mp3/mus
+base-path: ~/hdd/mp3/mus
+default-command: list

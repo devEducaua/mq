@@ -4,8 +4,9 @@ import (
 	"os"
 	"fmt"
 	"errors"
-	"mq/internal/mpd"
 	"mq/internal/commands"
+	"mq/internal/config"
+	"mq/internal/mpd"
 )
 
 func main() {
@@ -18,12 +19,16 @@ func main() {
 }
 
 func parseCommandLineArguments(argv []string) error {
-	var command string = "status";
+	config, err := config.GetConfig();
+	if err != nil {
+		return err;
+	}
+
+	var command string = config.DefaultCommand;
 	if len(argv) > 0 {
 		command = argv[0];
 	}
 
-	var err error;
 	switch command {
 	case "toggle":
 		togglecommand := "pause";
@@ -46,7 +51,6 @@ func parseCommandLineArguments(argv []string) error {
 	case "next":
 		err = mpd.RequestWithoutResponse("next");
 	case "delete":
-		// TODO: support ranges
 		if len(argv) < 2 {
 			return errors.New("command `delete` needs a argument: song id");
 		}

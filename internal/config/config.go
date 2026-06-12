@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Addr string
 	BasePath string
+	DefaultCommand string
 }
 
 func GetConfig() (Config, error) {
@@ -41,7 +42,7 @@ func GetConfig() (Config, error) {
 		switch key {
 		case "addr":
 			c.Addr = value;
-		case "basepath":
+		case "base-path":
 			home, err := os.UserHomeDir();
 			if err != nil {
 				return Config{}, err;
@@ -51,8 +52,10 @@ func GetConfig() (Config, error) {
 				basepath = filepath.Join(home, basepath[2:]);
 			}
 			c.BasePath = basepath;
+		case "default-command":
+			c.DefaultCommand = value;
 		default:
-			return Config{}, fmt.Errorf("fail to parse line in the config: %v", i);
+			return Config{}, fmt.Errorf("fail to parse line in the config: %v\n\t%v\n", i+1, line);
 		}
 	}
 
