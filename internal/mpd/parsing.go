@@ -250,6 +250,10 @@ func PrintFormattedQueue(queue []Song) error {
 		maxArtistLength = max(maxArtistLength, len(s.Artist));
 	}
 
+	if len(queue) == 1 {
+		return nil;
+	}
+
 	for _,s := range queue {
 		var marker = " ";
 		if s.File == current.File {
@@ -271,8 +275,17 @@ func PrintFormattedStatus(plainResponse string) error {
 		return err;
 	}
 
-	fmt.Printf("%v - %v\n", current.Artist, current.Title);
-	fmt.Printf("%v/%v - %v/%v\n", status.Song, status.Playlistlength, FormatDuration(status.Elapsed), FormatDuration(status.Duration));
+	artist := current.Artist;
+	if artist == "" {
+		artist = "no artist"
+	}
+	title := current.Title;
+	if title == "" {
+		title = "no title";
+	}
+
+	fmt.Printf("%v - %v\n", artist, title);
+	fmt.Printf("%v/%v - %v/%v - state: %v\n", status.Song, status.Playlistlength, FormatDuration(status.Elapsed), FormatDuration(status.Duration), status.State);
 	fmt.Printf("repeat: %v, random: %v, single: %v, consume: %v\n", status.Repeat, status.Random, status.Single, status.Consume)
 
 	return nil;
