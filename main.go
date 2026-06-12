@@ -50,7 +50,7 @@ func parseCommandLineArguments(argv []string) error {
 		err = mpd.RequestWithoutResponse("previous");
 	case "next":
 		err = mpd.RequestWithoutResponse("next");
-	case "delete":
+	case "delete", "del":
 		if len(argv) < 2 {
 			return errors.New("command `delete` needs a argument: song id");
 		}
@@ -80,6 +80,14 @@ func parseCommandLineArguments(argv []string) error {
 
 	case "list", "ls":
 		err = commands.ListCommand();
+	case "move", "mv":
+		if len(argv) < 3 {
+			return fmt.Errorf("command `%v` needs two arguments: `from` and `to` ", command);
+		}
+		from := argv[1];
+		to := argv[2];
+		req := fmt.Sprintf("move %v %v", from, to);
+		err = mpd.RequestWithoutResponse(req);
 	case "status":
 		plainResp, err := mpd.Request("status");
 		if err != nil {
