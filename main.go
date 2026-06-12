@@ -1,81 +1,110 @@
 package main
 
 import (
-	"bufio"
+	"errors"
 	"fmt"
-	"net"
 	"os"
-	"strings"
+	"mq/internal"
 )
 
 func main() {
 	argv := os.Args[1:];
+	err := parseCommandLineArguments(argv);
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %v\n", err);
+		os.Exit(1); 
+	}
+}
+
+func parseCommandLineArguments(argv []string) error {
 	if len(argv) == 0 {
-		os.Exit(1);
+		return nil;
 	}
 
-	if argv[0] == "toggle" {
-		err := request("pause");
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %v\n", err);
-			os.Exit(1);
+	var err error;
+	switch argv[0] {
+	case "toggle":
+		var command string = "pause";
+		if len(argv) >= 2 {
+			subcommand := argv[1];
+			switch subcommand {
+			case "consume", "single", "random", "repeat":
+				command = subcommand;
+			default:
+				return fmt.Errorf("invalid subcommand to the `toggle` command: %v", subcommand);
+			}
 		}
+		internal.ToggleCommand(command);
+	case "stop":
+		err = internal.RequestWithoutResponse("stop");
+	case "prev":
+		err = internal.RequestWithoutResponse("previous");
+	case "next":
+		err = internal.RequestWithoutResponse("next");
+	case "delete":
+		// TODO: support ranges
+		if len(argv) < 2 {
+			return errors.New("command `delete` needs a argument: song id");
+		}
+		req := fmt.Sprintf("delete %v", argv[1]);
+		err = internal.RequestWithoutResponse(req);
+	case "update":
+		err = internal.RequestWithoutResponse("update");
+	case "play":
+		if len(argv) < 2 {
+			return errors.New("command play needs a argument: song id");
+		}
+		req := fmt.Sprintf("play %v", argv[1]);
+		err = internal.RequestWithoutResponse(req);
+	case "add":
+		if len(argv) < 2 {
+			return errors.New("command add needs a argument: URI");
+		}
+		uri := argv[1];
+		req := fmt.Sprintf("add %v", uri);
+		err = internal.RequestWithoutResponse(req);
+	case "see":
+	case "list", "ls":
+		plainResp, err := internal.Request("playlistinfo");
+		if err != nil {
+			return err;
+		}
+		queue, err := internal.ParseInfoResponse(plainResp);
+		if err != nil {
+			return err;
+		}
+		if err := internal.PrintFormattedQueue(queue); err != nil {
+			return err;
+		}
+	case "status":
+		plainResp, err := internal.Request("status");
+		if err != nil {
+			return err;
+		}
+		if err := internal.PrintFormattedStatus(plainResp); err != nil {
+			return err;
+		}
+	case "plain":
+		if len(argv) < 2 {
+			return errors.New("command add needs a argument: request");
+		}
+		request := argv[1];
+		resp, err := internal.Request(request);
+		if err != nil {
+			return err;
+		}
+		fmt.Println(resp);
+
+
+	default:
+		return fmt.Errorf("command doesn't exist: %v", argv[0]);
 	}
-}
 
-func initializeMpdConnection() (net.Conn, error) {
-	var conn net.Conn;
-
-	addr, err := net.ResolveTCPAddr("tcp", "localhost:6600");
-	if err != nil {
-		return conn, err;
-	}
-
-	conn, err = net.DialTCP("tcp", nil, addr);
-	if err != nil {
-		return conn, err;
-	}
-
-	reader := bufio.NewReader(conn);
-	line, err := reader.ReadString('\n');
-	if err != nil {
-		return conn, err;
-	}
-
-	if !strings.HasPrefix(line, "OK MPD") {
-		return conn, fmt.Errorf("failed to initialize mpd connection");
-	}
-
-	return conn, nil;
-}
-
-func request(request string) (error) {
-	conn, err := initializeMpdConnection();
 	if err != nil {
 		return err;
 	}
-	if conn != nil {
-		defer conn.Close();
-	}
-
-	var line string;
-	var reader = bufio.NewReader(conn);
-	var sb strings.Builder;
-
-	fmt.Fprintf(conn, "%v\n", request);
-	for {
-		if line, err = reader.ReadString('\n'); err != nil {
-			return err;
-		}
-		if line == "OK\n" {
-			break;
-		} else if strings.HasPrefix(line, "ACK ") {
-			err = fmt.Errorf("ERROR: request failed: %v", sb.String());
-			break;
-		} else {
-			sb.WriteString(line);
-		}
-	}
-
-	return err;
+	
+	return nil;
 }
+
+
