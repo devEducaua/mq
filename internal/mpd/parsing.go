@@ -1,7 +1,9 @@
 package mpd
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -35,6 +37,59 @@ type Status struct {
 	Elapsed float64
 	NextSong int
 	NextSongId int
+}
+
+func ParseBinaryResponse(reader *bufio.Reader) ([]byte, int, error) {
+
+	// size:
+	line, err := reader.ReadString('\n');
+	if err != nil {
+		return nil, 0, err;
+	}
+	parts := strings.SplitN(line, ":", 2);
+	value := strings.TrimSpace(parts[1]);
+
+	size, err := strconv.Atoi(value);
+	if err != nil {
+		return nil, 0, err;
+	}
+
+	// type:
+	_, err = reader.ReadString('\n');
+	if err != nil {
+		return nil, 0, err;
+	}
+
+	// binary:
+	line, err = reader.ReadString('\n');
+	if err != nil {
+		return nil, 0, err;
+	}
+	parts = strings.SplitN(line, ":", 2);
+	value = strings.TrimSpace(parts[1]);
+
+	binary, err := strconv.Atoi(value);
+	if err != nil {
+		return nil, 0, err;
+	}
+
+	// binary data
+	buf := make([]byte, binary);
+	_, err = io.ReadFull(reader, buf);
+	if err != nil {
+		return nil, 0, err;
+	}
+
+	if _, err := reader.ReadByte(); err != nil {
+		return nil, 0, err;
+	}
+	return buf, size, err;
+}
+
+func EscapeMpd(s string) string {
+	s = strings.ReplaceAll(s, `\`, `\\`)
+	s = strings.ReplaceAll(s, `"`, `\"`)
+	return `"` + s + `"`;
 }
 
 func GetCurrentSong() (Song, error) {

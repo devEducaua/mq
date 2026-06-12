@@ -96,6 +96,8 @@ func parseCommandLineArguments(argv []string) error {
 		if err := mpd.PrintFormattedStatus(plainResp); err != nil {
 			return err;
 		}
+	case "albumart":
+		err = commands.AlbumArt();
 	case "plain":
 		if len(argv) < 2 {
 			return errors.New("command add needs a argument: request");

@@ -1,12 +1,14 @@
 package commands
 
 import (
-	"os"
+	"bufio"
 	"fmt"
-	"strings"
-	"path/filepath"
 	"mq/internal/config"
 	"mq/internal/mpd"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 )
 
 func ToggleCommand(command string) error {
@@ -78,3 +80,123 @@ func ListCommand() error {
 	return nil;
 }
 
+func AlbumArt() error {
+
+	msgs := make(chan string);
+	errs := make(chan error);
+
+	go watchPlayer(msgs, errs);
+
+	for {
+		select {
+		case msg := <-msgs:
+			if msg == "changed: player\n" {
+				path, err := getAlbumPath();
+				if err != nil {
+					return err;
+				}
+				runImageCommand(path);
+			}
+		case err := <-errs:
+			return err;
+		}
+	}
+}
+
+var imageCmd *exec.Cmd;
+func runImageCommand(path string) error {
+
+	if imageCmd != nil && imageCmd.Process != nil {
+		if err := imageCmd.Process.Kill(); err != nil {
+			return err;
+		}
+		_, err := imageCmd.Process.Wait();
+		if err != nil {
+			return err;
+		}
+	}
+
+	config, err := config.GetConfig();
+	if err != nil {
+		return err;
+	}
+	parts := strings.Fields(config.ImageCommand);
+	imageCmd = exec.Command(parts[0], append(parts[1:], path)...)
+
+	if err := imageCmd.Start(); err != nil {
+		return err;
+	}
+
+	return nil;
+}
+
+func getAlbumPath() (string, error) {
+	s, err := mpd.GetCurrentSong();
+	if err != nil {
+		return "", err;
+	}
+
+	config, err := config.GetConfig();
+	if err != nil {
+		return "", err;
+	}
+
+	file := filepath.Join(config.BasePath, s.File);
+
+	dir := filepath.Dir(file);
+	entries, err := os.ReadDir(dir);
+	if err != nil {
+		return "", fmt.Errorf("cannot open directory: %v", dir);
+	}
+	for _,e := range entries {
+		name := e.Name();
+		if name == "cover.jpg" || name == "cover.png" || name == "cover.jxl" || name == "cover.webp" {
+			return filepath.Join(dir, name), nil;
+		}
+	}
+
+	escaped := mpd.EscapeMpd(s.File);
+	var image []byte;
+	var size, offset int;
+
+	for {
+		req := fmt.Sprintf("readpicture %v %v", escaped, offset);
+		resp, err := mpd.Request(req);
+		if err != nil {
+			return "", err;
+		}
+
+		reader := bufio.NewReader(strings.NewReader(resp));
+
+		chunk, totalSize, err := mpd.ParseBinaryResponse(reader);
+		if err != nil {
+			return "", err;
+		}
+
+		size = totalSize;
+		image = append(image, chunk...);
+		offset += len(chunk);
+
+		if len(image) >= size {
+			break;
+		}
+	}
+
+	path := "/tmp/cover.jpg";
+	if err := os.WriteFile(path, image, 0755); err != nil {
+		return "", err;
+	}
+
+	return path, nil;
+}
+
+func watchPlayer(msg chan<- string, errs chan<- error) {
+	for {
+		result, err := mpd.Request("idle player");
+		if err != nil {
+			errs <- err;
+			continue;
+		}
+		msg <- result;
+	}
+}

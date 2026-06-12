@@ -11,6 +11,7 @@ type Config struct {
 	Addr string
 	BasePath string
 	DefaultCommand string
+	ImageCommand string
 }
 
 func GetConfig() (Config, error) {
@@ -54,6 +55,8 @@ func GetConfig() (Config, error) {
 			c.BasePath = basepath;
 		case "default-command":
 			c.DefaultCommand = value;
+		case "image-command":
+			c.ImageCommand = value;
 		default:
 			return Config{}, fmt.Errorf("fail to parse line in the config: %v\n\t%v\n", i+1, line);
 		}
