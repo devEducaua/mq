@@ -1,4 +1,4 @@
-package internal
+package mpd
 
 import (
 	"fmt"
@@ -36,6 +36,101 @@ type Status struct {
 	NextSong int
 	NextSongId int
 }
+
+func GetCurrentSong() (Song, error) {
+	resp, err := Request("currentsong");
+	if err != nil {
+		return Song{}, err;
+	}
+	songs, err := ParseInfoResponse(resp);
+	if err != nil {
+		return Song{}, err;
+	}
+	current := songs[0];
+
+	return current, nil;
+}
+
+func FormatDuration(seconds float64) string {
+	d := time.Duration(seconds * float64(time.Second));
+
+	hours := int(d.Hours());
+	minutes := int(d.Minutes()) % 60;
+	secs := int(d.Seconds()) % 60;
+
+	if hours > 0 {
+		return fmt.Sprintf("%d:%02d:%02d", hours, minutes, secs);
+	}
+
+	return fmt.Sprintf("%d:%02d", minutes, secs);
+}
+
+func ParseInfoResponse(plainResponse string) ([]Song, error) {
+	var queue []Song;
+	var s Song;
+
+	for line := range strings.SplitSeq(plainResponse, "\n") {
+		if strings.TrimSpace(line) == "" {
+			continue;
+		}
+	
+		parts := strings.SplitN(line, ": ", 2);
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("failed to parse invalid line: `%v`", line);
+		}
+		key := parts[0];
+		value := strings.TrimSpace(parts[1]);
+
+		switch key {
+		case "file":
+			if s.File != "" {
+				queue = append(queue, s);
+				s = Song{};
+			}
+			s.File = value;
+		case "Artist":
+			s.Artist = value;
+		case "Title":
+			s.Title = value;
+		case "Album":
+			s.Album = value;
+		case "Pos":
+			conv, err := strconv.Atoi(value);
+			if err != nil {
+				return nil, err;
+			}
+			s.Pos = conv;
+		case "Id":
+			conv, err := strconv.Atoi(value);
+			if err != nil {
+				return nil, err;
+			}
+			s.Id = conv;
+		case "Time":
+			conv, err := strconv.Atoi(value);
+			if err != nil {
+				return nil, err;
+			}
+			s.Time = conv;
+		case "Date":
+			conv, err := strconv.Atoi(value);
+			if err != nil {
+				return nil, err;
+			}
+			s.Date = conv;
+		case "Duration":
+			conv, err := strconv.Atoi(value);
+			if err != nil {
+				return nil, err;
+			}
+			s.Duration = conv*60;
+		}
+	}
+	queue = append(queue, s);
+
+	return queue, nil;
+}
+
 
 func ParseStatusResponse(plainResponse string) (Status, error) {
 	var s Status;
@@ -139,100 +234,6 @@ func ParseStatusResponse(plainResponse string) (Status, error) {
 	return s, nil;
 }
 
-func FormatDuration(seconds float64) string {
-	d := time.Duration(seconds * float64(time.Second));
-
-	hours := int(d.Hours());
-	minutes := int(d.Minutes()) % 60;
-	secs := int(d.Seconds()) % 60;
-
-	if hours > 0 {
-		return fmt.Sprintf("%d:%02d:%02d", hours, minutes, secs);
-	}
-
-	return fmt.Sprintf("%d:%02d", minutes, secs);
-}
-
-func ParseInfoResponse(plainResponse string) ([]Song, error) {
-	var queue []Song;
-	var s Song;
-
-	for line := range strings.SplitSeq(plainResponse, "\n") {
-		if strings.TrimSpace(line) == "" {
-			continue;
-		}
-	
-		parts := strings.SplitN(line, ": ", 2);
-		if len(parts) != 2 {
-			return nil, fmt.Errorf("failed to parse invalid line: `%v`", line);
-		}
-		key := parts[0];
-		value := strings.TrimSpace(parts[1]);
-
-		switch key {
-		case "file":
-			if s.File != "" {
-				queue = append(queue, s);
-				s = Song{};
-			}
-			s.File = value;
-		case "Artist":
-			s.Artist = value;
-		case "Title":
-			s.Title = value;
-		case "Album":
-			s.Album = value;
-		case "Pos":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return nil, err;
-			}
-			s.Pos = conv;
-		case "Id":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return nil, err;
-			}
-			s.Id = conv;
-		case "Time":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return nil, err;
-			}
-			s.Time = conv;
-		case "Date":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return nil, err;
-			}
-			s.Date = conv;
-		case "Duration":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return nil, err;
-			}
-			s.Duration = conv*60;
-		}
-	}
-	queue = append(queue, s);
-
-	return queue, nil;
-}
-
-func GetCurrentSong() (Song, error) {
-	resp, err := Request("currentsong");
-	if err != nil {
-		return Song{}, err;
-	}
-	songs, err := ParseInfoResponse(resp);
-	if err != nil {
-		return Song{}, err;
-	}
-	current := songs[0];
-
-	return current, nil;
-}
-
 func PrintFormattedQueue(queue []Song) error {
 	maxTitleLength := 0;
 	maxAlbumLength := 0;
@@ -256,9 +257,9 @@ func PrintFormattedQueue(queue []Song) error {
 		}
 		fmt.Printf("%-4v%1s %-*s - %-*s - %-*s\n", s.Pos, marker, maxTitleLength, s.Title, maxAlbumLength, s.Album, maxArtistLength, s.Artist);
 	}
-
 	return nil;
 }
+
 
 func PrintFormattedStatus(plainResponse string) error {
 	current, err := GetCurrentSong();
@@ -276,37 +277,3 @@ func PrintFormattedStatus(plainResponse string) error {
 
 	return nil;
 }
-
-func ToggleCommand(command string) error {
-	if command != "pause" {
-		plainResponse, err := Request("status");
-		if err != nil {
-			return err;
-		}
-		status, err := ParseStatusResponse(plainResponse);
-		if err != nil {
-			return err;
-		}
-		var mode int;
-
-		switch command {
-		case "repeat":
-			mode = 1 - status.Repeat;
-		case "random":
-			mode = 1 - status.Random;
-		case "single":
-			mode = 1 - status.Single;
-		case "consume":
-			mode = 1 - status.Consume;
-		default:
-			return fmt.Errorf("invalid subcommand to the `toggle` command: %v", command);
-		}
-		command = fmt.Sprintf("%v %v", command, mode);
-	}
-
-	if err := RequestWithoutResponse(command); err != nil {
-		return err;
-	}
-	return nil;
-}
-

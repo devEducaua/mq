@@ -1,13 +1,11 @@
 package main
 
 import (
-	"errors"
-	"fmt"
-	"mq/internal"
-	"mq/internal/config"
 	"os"
-	"path/filepath"
-	"strings"
+	"fmt"
+	"errors"
+	"mq/internal/mpd"
+	"mq/internal/commands"
 )
 
 func main() {
@@ -20,93 +18,68 @@ func main() {
 }
 
 func parseCommandLineArguments(argv []string) error {
-	if len(argv) == 0 {
-		return nil;
+	var command string = "status";
+	if len(argv) > 0 {
+		command = argv[0];
 	}
 
 	var err error;
-	switch argv[0] {
+	switch command {
 	case "toggle":
-		var command string = "pause";
+		togglecommand := "pause";
 		if len(argv) >= 2 {
 			subcommand := argv[1];
 			switch subcommand {
 			case "consume", "single", "random", "repeat":
-				command = subcommand;
+				togglecommand = subcommand;
 			default:
 				return fmt.Errorf("invalid subcommand to the `toggle` command: %v", subcommand);
 			}
 		}
-		internal.ToggleCommand(command);
+		err = commands.ToggleCommand(togglecommand);
 	case "stop":
-		err = internal.RequestWithoutResponse("stop");
+		err = mpd.RequestWithoutResponse("stop");
 	case "prev":
-		err = internal.RequestWithoutResponse("previous");
+		err = mpd.RequestWithoutResponse("previous");
 	case "next":
-		err = internal.RequestWithoutResponse("next");
+		err = mpd.RequestWithoutResponse("next");
 	case "delete":
 		// TODO: support ranges
 		if len(argv) < 2 {
 			return errors.New("command `delete` needs a argument: song id");
 		}
 		req := fmt.Sprintf("delete %v", argv[1]);
-		err = internal.RequestWithoutResponse(req);
+		err = mpd.RequestWithoutResponse(req);
 	case "update":
-		err = internal.RequestWithoutResponse("update");
+		err = mpd.RequestWithoutResponse("update");
 	case "play":
 		if len(argv) < 2 {
 			return errors.New("command play needs a argument: song id");
 		}
 		req := fmt.Sprintf("play %v", argv[1]);
-		err = internal.RequestWithoutResponse(req);
+		err = mpd.RequestWithoutResponse(req);
 	case "add":
 		if len(argv) < 2 {
 			return errors.New("command add needs a argument: URI");
 		}
 		uri := argv[1];
 		req := fmt.Sprintf("add %v", uri);
-		err = internal.RequestWithoutResponse(req);
+		err = mpd.RequestWithoutResponse(req);
 	case "see":
-		config, err := config.GetConfig();
-		if err != nil {
-			return err;
-		}
-		basepath := config.BasePath;
-
-		input := ".";
+		input := "/";
 		if len(argv) == 2 {
 			input = argv[1];
 		}
-		path := filepath.Join(basepath, input);
-		entries, err := os.ReadDir(path);
-		if err != nil {
-			return err;
-		}
-		for _,e := range entries {
-			name := e.Name();
-			if !strings.HasPrefix(name, ".") {
-				fmt.Println(name);
-			}
-		}
+		err = commands.SeeCommand(input);
 
 	case "list", "ls":
-		plainResp, err := internal.Request("playlistinfo");
-		if err != nil {
-			return err;
-		}
-		queue, err := internal.ParseInfoResponse(plainResp);
-		if err != nil {
-			return err;
-		}
-		if err := internal.PrintFormattedQueue(queue); err != nil {
-			return err;
-		}
+		err = commands.ListCommand();
 	case "status":
-		plainResp, err := internal.Request("status");
+		plainResp, err := mpd.Request("status");
 		if err != nil {
 			return err;
 		}
-		if err := internal.PrintFormattedStatus(plainResp); err != nil {
+		if err := mpd.PrintFormattedStatus(plainResp); err != nil {
 			return err;
 		}
 	case "plain":
@@ -114,12 +87,11 @@ func parseCommandLineArguments(argv []string) error {
 			return errors.New("command add needs a argument: request");
 		}
 		request := argv[1];
-		resp, err := internal.Request(request);
+		resp, err := mpd.Request(request);
 		if err != nil {
 			return err;
 		}
 		fmt.Println(resp);
-
 
 	default:
 		return fmt.Errorf("command doesn't exist: %v", argv[0]);
