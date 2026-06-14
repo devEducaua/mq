@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 type Song struct {
@@ -300,9 +301,9 @@ func PrintFormattedQueue(queue []Song) error {
 	}
 
 	for _,s := range queue {
-		maxTitleLength = max(maxTitleLength, len(s.Title));
-		maxAlbumLength = max(maxAlbumLength, len(s.Album));
-		maxArtistLength = max(maxArtistLength, len(s.Artist));
+		maxTitleLength = max(maxTitleLength, utf8.RuneCountInString(s.Title));
+		maxAlbumLength = max(maxAlbumLength, utf8.RuneCountInString(s.Album));
+		maxArtistLength = max(maxArtistLength, utf8.RuneCountInString(s.Artist));
 	}
 
 	if len(queue) == 1 {
