@@ -58,9 +58,10 @@ func SeeCommand(input string) error {
 	}
 	for _,e := range entries {
 		name := e.Name();
-		if !strings.HasPrefix(name, ".") {
-			fmt.Println(name);
+		if strings.HasPrefix(name, ".") {
+			continue;
 		}
+		fmt.Printf("%v\n", name);
 	}
 	return nil;
 }
@@ -107,13 +108,14 @@ var imageCmd *exec.Cmd;
 func runImageCommand(path string) error {
 
 	if imageCmd != nil && imageCmd.Process != nil {
-		if err := imageCmd.Process.Kill(); err != nil {
-			return err;
-		}
-		_, err := imageCmd.Process.Wait();
-		if err != nil {
-			return err;
-		}
+		// if err := imageCmd.Process.Kill(); err != nil {
+		// 	return err;
+		// }
+		_ = imageCmd.Process.Kill();
+		_ = imageCmd.Wait();
+		//if err != nil {
+		//	return err;
+		//}
 	}
 
 	config, err := config.GetConfig();
