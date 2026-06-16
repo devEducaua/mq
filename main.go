@@ -102,7 +102,7 @@ func parseCommandLineArguments(argv []string) error {
 		if len(argv) < 2 {
 			return errors.New("command add needs a argument: request");
 		}
-		request := mpd.EscapeMpd(argv[1]);
+		request := argv[1]; //mpd.EscapeMpd(argv[1]);
 		resp, err := mpd.Request(request);
 		if err != nil {
 			return err;

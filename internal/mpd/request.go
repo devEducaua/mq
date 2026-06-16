@@ -3,9 +3,10 @@ package mpd
 import (
 	"bufio"
 	"fmt"
+	"io"
+	"mq/internal/config"
 	"net"
 	"strings"
-	"mq/internal/config"
 )
 
 func initializeMpdConnection() (*net.TCPConn, error) {
@@ -46,26 +47,28 @@ func Request(request string) (string, error) {
 		defer conn.Close();
 	}
 
-	var line string;
 	var reader = bufio.NewReader(conn);
 	var sb strings.Builder;
 
 	fmt.Fprintf(conn, "%v\n", request);
 	for {
-		if line, err = reader.ReadString('\n'); err != nil {
-			return "",  err;
+		line, err := reader.ReadString('\n'); 
+		if err != nil {
+			if err == io.EOF {
+				return "",  io.ErrUnexpectedEOF;
+			}
+			return "",  fmt.Errorf("failed to read line: %v", err);
 		}
 		if line == "OK\n" {
 			break;
 		} else if strings.HasPrefix(line, "ACK ") {
-			err = fmt.Errorf("request failed: %v", line);
-			break;
+			return "", fmt.Errorf("request failed: %v", line);
 		} else {
 			sb.WriteString(line);
 		}
 	}
 
-	return sb.String(), err;
+	return sb.String(), nil;
 }
 
 func RequestWithoutResponse(request string) (error) {
