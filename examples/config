@@ -1,4 +1,3 @@
 addr: localhost:6600
 base-path: ~/hdd/mp3/mus
 default-command: list
-image-command: nsxiv
