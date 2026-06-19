@@ -4,40 +4,44 @@ import (
 	"os"
 	"fmt"
 	"bufio"
+	"strconv"
 	"strings"
 	"path/filepath"
 	"mq/internal/mpd"
 	"mq/internal/config"
 )
 
-func ToggleCommand(command string) error {
-	if command != "pause" {
-		plainResponse, err := mpd.Request("status");
-		if err != nil {
-			return err;
-		}
-		status, err := mpd.ParseStatusResponse(plainResponse);
-		if err != nil {
-			return err;
-		}
-		var mode int;
-
-		switch command {
-		case "repeat":
-			mode = 1 - status.Repeat;
-		case "random":
-			mode = 1 - status.Random;
-		case "single":
-			mode = 1 - status.Single;
-		case "consume":
-			mode = 1 - status.Consume;
-		default:
-			return fmt.Errorf("invalid subcommand to the `toggle` command: %v", command);
-		}
-		command = fmt.Sprintf("%v %v", command, mode);
+func ChangeState(state string) error {
+	plainResponse, err := mpd.Request("status");
+	if err != nil {
+		return err;
+	}
+	status, err := mpd.ParseStatusResponse(plainResponse);
+	if err != nil {
+		return err;
 	}
 
-	if err := mpd.RequestWithoutResponse(command); err != nil {
+	var mode int;
+	var displayMode string;
+
+	switch state {
+	case "repeat":
+		mode = 1 - status.Repeat;
+		displayMode = strconv.Itoa(mode);
+	case "random":
+		mode = 1 - status.Random;
+		displayMode = strconv.Itoa(mode);
+	case "single":
+		mode = 1 - int(status.Single);
+	case "consume":
+		mode = 1 - int(status.Consume);
+	}
+	if mode == -1 {
+		displayMode = "ONESHOT";
+	}
+
+	request := fmt.Sprintf("%v %v", state, displayMode);
+	if err := mpd.RequestWithoutResponse(request); err != nil {
 		return err;
 	}
 	return nil;
