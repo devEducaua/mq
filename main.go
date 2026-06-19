@@ -98,17 +98,6 @@ func parseCommandLineArguments(argv []string) error {
 		}
 	case "albumart":
 		err = commands.AlbumArt();
-	case "plain":
-		if len(argv) < 2 {
-			return errors.New("command add needs a argument: request");
-		}
-		request := argv[1]; //mpd.EscapeMpd(argv[1]);
-		resp, err := mpd.Request(request);
-		if err != nil {
-			return err;
-		}
-		fmt.Println(resp);
-
 	default:
 		return fmt.Errorf("command doesn't exist: %v", argv[0]);
 	}
