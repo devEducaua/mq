@@ -31,33 +31,19 @@ func parseCommandLineArguments(argv []string) error {
 
 	switch command {
 	case "toggle":
-		togglecommand := "pause";
-		if len(argv) >= 2 {
-			subcommand := argv[1];
-			switch subcommand {
-			case "consume", "single", "random", "repeat":
-				togglecommand = subcommand;
-			default:
-				return fmt.Errorf("invalid subcommand to the `toggle` command: %v", subcommand);
-			}
-		}
-		err = commands.ToggleCommand(togglecommand);
-	case "stop":
-		err = mpd.RequestWithoutResponse("stop");
-	case "clear":
-		err = mpd.RequestWithoutResponse("clear");
+		err = mpd.RequestWithoutResponse("pause");
 	case "prev":
 		err = mpd.RequestWithoutResponse("previous");
-	case "next":
-		err = mpd.RequestWithoutResponse("next");
+	case "stop", "clear", "next", "update":
+		err = mpd.RequestWithoutResponse(command);
+	case "consume", "single", "random", "repeat":
+		err = commands.ChangeState(command);
 	case "delete", "del":
 		if len(argv) < 2 {
 			return errors.New("command `delete` needs a argument: song id");
 		}
 		req := fmt.Sprintf("delete %v", argv[1]);
 		err = mpd.RequestWithoutResponse(req);
-	case "update":
-		err = mpd.RequestWithoutResponse("update");
 	case "play":
 		if len(argv) < 2 {
 			return errors.New("command play needs a argument: song id");
