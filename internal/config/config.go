@@ -11,10 +11,42 @@ type Config struct {
 	Addr string
 	BasePath string
 	DefaultCommand string
-	ImageCommand string
+	CoverOutputPath string
 }
 
 func GetConfig() (Config, error) {
+	config := Config{
+		Addr: "localhost:6600",
+		BasePath: "./",
+		DefaultCommand: "list",
+		CoverOutputPath: "/tmp/cover.jpg",
+	}
+
+	parsed, err := ParseConfig();
+	if err != nil {
+		return Config{}, err;
+	}
+
+	if config.Addr != parsed.Addr && parsed.Addr != "" {
+		config.Addr = parsed.Addr;	
+	}
+
+	if config.BasePath != parsed.BasePath && parsed.BasePath != "" {
+		config.BasePath = parsed.BasePath;	
+	}
+
+	if config.DefaultCommand != parsed.DefaultCommand && parsed.DefaultCommand != "" {
+		config.DefaultCommand = parsed.DefaultCommand;	
+	}
+
+	if config.CoverOutputPath != parsed.CoverOutputPath && parsed.CoverOutputPath != "" {
+		config.CoverOutputPath = parsed.CoverOutputPath;	
+	}
+
+	return config, nil;
+}
+
+func ParseConfig() (Config, error) {
 	var c Config;
 
 	base, err := GetBaseDir();
@@ -55,8 +87,8 @@ func GetConfig() (Config, error) {
 			c.BasePath = basepath;
 		case "default-command":
 			c.DefaultCommand = value;
-		case "image-command":
-			c.ImageCommand = value;
+		case "cover-path":
+			c.CoverOutputPath = value;
 		default:
 			return Config{}, fmt.Errorf("fail to parse line in the config: %v\n\t%v\n", i+1, line);
 		}
