@@ -90,8 +90,7 @@ func AlbumArt() error {
 		select {
 		case msg := <-msgs:
 			if msg == "changed: player\n" {
-				outputPath := "/tmp/cover.jpg";
-				if err := writeImageToPath(outputPath); err != nil {
+				if err := writeImageToPath(); err != nil {
 					return err;
 				}
 			}
@@ -101,7 +100,14 @@ func AlbumArt() error {
 	}
 }
 
-func writeImageToPath(outputPath string) error {
+func writeImageToPath() error {
+	config, err := config.GetConfig();
+	if err != nil {
+		return err;
+	}
+
+	outputPath := config.CoverOutputPath;
+
 	s, err := mpd.GetCurrentSong();
 	if err != nil {
 		return err;
