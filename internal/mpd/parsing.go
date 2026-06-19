@@ -23,12 +23,19 @@ type Song struct {
 	Id int
 }
 
+type State int;
+const (
+	ON State = iota
+	OFF
+	ONESHOT
+)
+
 type Status struct {
 	Volume int
 	Repeat int
 	Random int
-	Single int
-	Consume int
+	Single State
+	Consume State
 	Playlist int
 	Playlistlength int
 	State string
