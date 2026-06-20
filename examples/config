@@ -1,3 +1,5 @@
 addr: localhost:6600
 base-path: ~/hdd/mp3/mus
 default-command: list
+cover-path: /tmp/cover.jpg
+notify-path: ~/.config/mq/notify
