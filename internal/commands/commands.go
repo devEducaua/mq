@@ -1,14 +1,15 @@
 package commands
 
 import (
-	"os"
-	"fmt"
 	"bufio"
+	"fmt"
+	"mq/internal/config"
+	"mq/internal/mpd"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
-	"path/filepath"
-	"mq/internal/mpd"
-	"mq/internal/config"
 )
 
 func ChangeState(state string) error {
@@ -84,7 +85,7 @@ func ListCommand() error {
 	return nil;
 }
 
-func AlbumArt() error {
+func AlbumArt(notify bool) error {
 	msgs := make(chan string);
 	errs := make(chan error);
 
@@ -97,11 +98,42 @@ func AlbumArt() error {
 				if err := writeImageToPath(); err != nil {
 					return err;
 				}
+				if notify {
+					runNotify();
+				}
 			}
 		case err := <-errs:
 			return err;
 		}
 	}
+}
+
+func runNotify() error {
+	s, err := mpd.GetCurrentSong();
+	if err != nil {
+		return err;
+	}
+
+	config, err := config.GetConfig()
+	if err != nil {
+		return err;
+	}
+
+	if err := runExternalCommand(config.NotifyScriptPath, config.CoverOutputPath, s.Artist, s.Title); err != nil {
+		return err;
+	}
+
+	return nil;
+}
+
+func runExternalCommand(command ...string) error {
+	fmt.Printf("COMMANDS: %v\n", command);
+	cmd := exec.Command(command[0], command[1:]...);
+	if err := cmd.Run(); err != nil {
+		return err;
+	}
+
+	return nil;
 }
 
 func writeImageToPath() error {

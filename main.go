@@ -83,7 +83,13 @@ func parseCommandLineArguments(argv []string) error {
 			return err;
 		}
 	case "albumart":
-		err = commands.AlbumArt();
+		notify := false;	
+		if len(argv) <= 2 {
+			if argv[1] == "--notify" {
+				notify = true;
+			}
+		}
+		err = commands.AlbumArt(notify);
 	default:
 		return fmt.Errorf("command doesn't exist: %v", argv[0]);
 	}

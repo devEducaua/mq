@@ -1,0 +1,7 @@
+#!/bin/sh
+
+COVERPATH="$1"
+ARTIST="$2"
+TRACK="$3"
+
+notify-send -i "$COVERPATH" "$ARTIST    -    $TRACK"
