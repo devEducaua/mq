@@ -38,7 +38,7 @@ func ChangeState(state string) error {
 		mode = 1 - int(status.Consume);
 	}
 	if mode == -1 {
-		displayMode = "ONESHOT";
+		displayMode = "oneshot";
 	}
 
 	request := fmt.Sprintf("%v %v", state, displayMode);
