@@ -1,0 +1,115 @@
+.TH MQ 1 "June 2026" "mq 1.0" "User Commands"
+
+.SH NAME
+mq \- music queue
+
+.SH SYNOPSIS
+mq <command> [<argument>] [options]
+
+.SH DESCRIPTION
+mq is a simple mpd client cli.
+
+.SH COMMANDS
+
+.TP
+.B toggle
+toggles between play and pause.
+
+.TP
+.B play ID
+play's the music in the queue with ID.
+
+.TP 
+.B prev
+play's previous music in the queue.
+
+.TP 
+.B next
+play's next music in the queue.
+
+.TP 
+.B clear
+clear music queue.
+
+.TP 
+.B stop
+stop playing current song.
+
+.TP 
+.B repeat
+toggles the repeat mode.
+
+.TP 
+.B random
+toggles the random mode.
+
+.TP 
+.B consume
+toggles the consume mode.
+
+.TP 
+.B single
+toggles the single mode.
+
+.TP 
+.B status
+show information about the current state, like: 
+current song, time/duration, the state of single, consume, repeat and random.
+
+.TP
+.B see [PATH]
+see folders in the mpd music directory.
+if no PATH is provided, the root is used.
+
+.TP 
+.B add PATH
+add songs or folders from the music directory.
+
+.TP 
+.B list, ls
+print's the queue.
+
+.TP
+.B move, mv FROM TO
+move's a track or a range of tracks to an determinated id.
+FROM can be an id or a range.
+
+.TP 
+.B delete, del ID
+remove's a track or a range of tracks from the queue.
+
+.TP
+.B albumart [--notify]
+write the albumart of the current song to a file.
+if --notify is passed, it runs a notify script when the song changes.
+
+.TP
+.B update
+scan for updated files in the music directory.
+
+.SH EXAMPLES
+
+.TP
+add a new track.
+.B mq add example/track.mp3
+
+.TP
+see a folder in the mpd music directory.
+.B mq see example
+
+.TP
+see the current queue.
+.B mq list
+
+.TP
+move a range of files in the queue.
+.B mq mv 0:10 20
+
+.SH EXIT STATUS
+0 on success, non-zero on error.
+
+.SH FILES
+.TP
+.I ~/.config/mq/config
+configuration file.
+
