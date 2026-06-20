@@ -119,15 +119,21 @@ func runNotify() error {
 		return err;
 	}
 
-	if err := runExternalCommand(config.NotifyScriptPath, config.CoverOutputPath, s.Artist, s.Title); err != nil {
+	if err := RunExternalCommand(false, config.NotifyScriptPath, config.CoverOutputPath, s.Artist, s.Title); err != nil {
 		return err;
 	}
 
 	return nil;
 }
 
-func runExternalCommand(command ...string) error {
+func RunExternalCommand(setStds bool, command ...string) error {
 	cmd := exec.Command(command[0], command[1:]...);
+
+	if setStds {
+		cmd.Stdin = os.Stdin;
+		cmd.Stdout = os.Stdout;
+		cmd.Stderr = os.Stderr;
+	}
 	if err := cmd.Run(); err != nil {
 		return err;
 	}

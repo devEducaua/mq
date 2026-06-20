@@ -90,6 +90,8 @@ func parseCommandLineArguments(argv []string) error {
 			}
 		}
 		err = commands.AlbumArt(notify);
+	case "--help":
+		err = commands.RunExternalCommand(true, "man", "mq(1)");
 	default:
 		return fmt.Errorf("command doesn't exist: %v", argv[0]);
 	}
