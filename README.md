@@ -38,6 +38,7 @@ mq --help
 for more information on usage consult the manpage.
 
 # configuration
+mq read's the config file in $XDG_CONFIG_HOME/mq/config.
 
 ```conf
 # the mpd address.
