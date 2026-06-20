@@ -3,7 +3,7 @@
 
 mq (music queue)
 
-# build
+## build
 
 just run:
 ```sh
@@ -16,7 +16,7 @@ for installing:
 make install
 ```
 
-# usage
+## usage
 
 basic usage:
 ```sh
@@ -29,8 +29,32 @@ mq add example/song.mp3
 # to see a directory in the mpd music directory.
 mq see example
 
+# write's the albumart to a file, and run a notification script everytime the song changes.
+mq albumart --notify
+
 # opens man page.
 mq --help
 ```
-
 for more information on usage consult the manpage.
+
+# configuration
+
+```conf
+# the mpd address.
+addr: localhost:6600
+
+# the music directory of mpd
+base-path: ~/music
+
+# the default command that mq will run when no args are provided.
+default-command: list
+
+# where to save the currentsong album art.
+cover-path: /tmp/cover.jpg
+
+# the notify script to run
+notify-path: ~/.config/mq/notify
+```
+
+for config and script example see ./examples.
+

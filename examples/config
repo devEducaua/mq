@@ -1,5 +1,6 @@
 addr: localhost:6600
-base-path: ~/hdd/mp3/mus
+base-path: ~/music
 default-command: list
 cover-path: /tmp/cover.jpg
 notify-path: ~/.config/mq/notify
+
