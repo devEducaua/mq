@@ -127,7 +127,6 @@ func runNotify() error {
 }
 
 func runExternalCommand(command ...string) error {
-	fmt.Printf("COMMANDS: %v\n", command);
 	cmd := exec.Command(command[0], command[1:]...);
 	if err := cmd.Run(); err != nil {
 		return err;
@@ -147,6 +146,9 @@ func writeImageToPath() error {
 	s, err := mpd.GetCurrentSong();
 	if err != nil {
 		return err;
+	}
+	if s.File == "" {
+		return nil;
 	}
 
 	image, found, err := findCoverFile(s.File);
