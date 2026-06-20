@@ -12,6 +12,7 @@ type Config struct {
 	BasePath string
 	DefaultCommand string
 	CoverOutputPath string
+	NotifyScriptPath string
 }
 
 func GetConfig() (Config, error) {
@@ -20,6 +21,7 @@ func GetConfig() (Config, error) {
 		BasePath: "./",
 		DefaultCommand: "list",
 		CoverOutputPath: "/tmp/cover.jpg",
+		NotifyScriptPath: "./notify",
 	}
 
 	parsed, err := ParseConfig();
@@ -30,17 +32,17 @@ func GetConfig() (Config, error) {
 	if config.Addr != parsed.Addr && parsed.Addr != "" {
 		config.Addr = parsed.Addr;	
 	}
-
 	if config.BasePath != parsed.BasePath && parsed.BasePath != "" {
 		config.BasePath = parsed.BasePath;	
 	}
-
 	if config.DefaultCommand != parsed.DefaultCommand && parsed.DefaultCommand != "" {
 		config.DefaultCommand = parsed.DefaultCommand;	
 	}
-
 	if config.CoverOutputPath != parsed.CoverOutputPath && parsed.CoverOutputPath != "" {
 		config.CoverOutputPath = parsed.CoverOutputPath;	
+	}
+	if config.NotifyScriptPath != parsed.NotifyScriptPath && parsed.NotifyScriptPath != "" {
+		config.NotifyScriptPath = parsed.NotifyScriptPath;
 	}
 
 	return config, nil;
@@ -89,6 +91,8 @@ func ParseConfig() (Config, error) {
 			c.DefaultCommand = value;
 		case "cover-path":
 			c.CoverOutputPath = value;
+		case "notify-path":
+			c.NotifyScriptPath = value;
 		default:
 			return Config{}, fmt.Errorf("fail to parse line in the config: %v\n\t%v\n", i+1, line);
 		}
@@ -98,7 +102,6 @@ func ParseConfig() (Config, error) {
 }
 
 func GetBaseDir() (string, error) {
-
 	xdgDir := os.Getenv("XDG_CONFIG_HOME");
 
 	path := filepath.Join(xdgDir, "mq");
