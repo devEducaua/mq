@@ -28,18 +28,17 @@ func ChangeState(state string, newMode string) error {
 
 		switch state {
 		case "repeat":
-			mode = fromIntToState(status.Repeat);
+			mode = fromIntToState(1 - status.Repeat);
 		case "random":
-			mode = fromIntToState(status.Random);
+			mode = fromIntToState(1 - status.Random);
 		case "consume":
-			mode = fromIntToState(int(status.Consume));
+			mode = fromIntToState(1 - int(status.Consume));
 		case "single":
-			mode = fromIntToState(int(status.Single));
+			mode = fromIntToState(1 - int(status.Single));
 		}
 	}
 
 	request := fmt.Sprintf("%v %v", state, mode);
-	fmt.Printf("REQUEST: %v\n", request);
 	if err := mpd.RequestWithoutResponse(request); err != nil {
 		return err;
 	}
@@ -50,7 +49,7 @@ func fromIntToState(i int) string {
 	switch i {
 	case 0, 1:
 		return strconv.Itoa(i);
-	case 2:
+	case -1:
 		return "oneshot";
 	default:
 		return "";
