@@ -37,7 +37,11 @@ func parseCommandLineArguments(argv []string) error {
 	case "stop", "clear", "next", "update":
 		err = mpd.RequestWithoutResponse(command);
 	case "consume", "single", "random", "repeat":
-		err = commands.ChangeState(command);
+		var mode string;
+		if len(argv) == 2 {
+			mode = argv[1];
+		}
+		err = commands.ChangeState(command, mode);
 	case "delete", "del":
 		if len(argv) < 2 {
 			return errors.New("command `delete` needs a argument: song id");
@@ -102,5 +106,4 @@ func parseCommandLineArguments(argv []string) error {
 	
 	return nil;
 }
-
 

@@ -12,40 +12,49 @@ import (
 	"strings"
 )
 
-func ChangeState(state string) error {
-	plainResponse, err := mpd.Request("status");
-	if err != nil {
-		return err;
-	}
-	status, err := mpd.ParseStatusResponse(plainResponse);
-	if err != nil {
-		return err;
+func ChangeState(state string, newMode string) error {
+	var mode string;
+	mode = newMode;
+
+	if newMode == "" {
+		plainResponse, err := mpd.Request("status");
+		if err != nil {
+			return err;
+		}
+		status, err := mpd.ParseStatusResponse(plainResponse);
+		if err != nil {
+			return err;
+		}
+
+		switch state {
+		case "repeat":
+			mode = fromIntToState(status.Repeat);
+		case "random":
+			mode = fromIntToState(status.Random);
+		case "consume":
+			mode = fromIntToState(int(status.Consume));
+		case "single":
+			mode = fromIntToState(int(status.Single));
+		}
 	}
 
-	var mode int;
-	var displayMode string;
-
-	switch state {
-	case "repeat":
-		mode = 1 - status.Repeat;
-		displayMode = strconv.Itoa(mode);
-	case "random":
-		mode = 1 - status.Random;
-		displayMode = strconv.Itoa(mode);
-	case "single":
-		mode = 1 - int(status.Single);
-	case "consume":
-		mode = 1 - int(status.Consume);
-	}
-	if mode == -1 {
-		displayMode = "oneshot";
-	}
-
-	request := fmt.Sprintf("%v %v", state, displayMode);
+	request := fmt.Sprintf("%v %v", state, mode);
+	fmt.Printf("REQUEST: %v\n", request);
 	if err := mpd.RequestWithoutResponse(request); err != nil {
 		return err;
 	}
 	return nil;
+}
+
+func fromIntToState(i int) string {
+	switch i {
+	case 0, 1:
+		return strconv.Itoa(i);
+	case 2:
+		return "oneshot";
+	default:
+		return "";
+	}
 }
 
 func SeeCommand(input string) error {
