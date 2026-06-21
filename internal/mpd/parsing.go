@@ -25,8 +25,8 @@ type Song struct {
 
 type State int;
 const (
-	StateOn State = iota
-	StateOff
+	StateOff State = iota
+	StateOn
 	StateOneshot
 )
 
