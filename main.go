@@ -83,7 +83,7 @@ func parseCommandLineArguments(argv []string) error {
 		if err != nil {
 			return err;
 		}
-		if err := mpd.PrintFormattedStatus(plainResp); err != nil {
+		if err := commands.PrintFormattedStatus(plainResp); err != nil {
 			return err;
 		}
 	case "albumart":

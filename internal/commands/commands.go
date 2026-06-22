@@ -87,7 +87,7 @@ func ListCommand() error {
 	if err != nil {
 		return err;
 	}
-	if err := mpd.PrintFormattedQueue(queue); err != nil {
+	if err := PrintFormattedQueue(queue); err != nil {
 		return err;
 	}
 	return nil;
