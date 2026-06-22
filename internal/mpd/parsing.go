@@ -121,6 +121,9 @@ func ParseInfoResponse(plainResponse string) ([]Song, error) {
 		key := parts[0];
 		value := strings.TrimSpace(parts[1]);
 
+		var conv int;
+		var err error;
+
 		switch key {
 		case "file":
 			if s.File != "" {
@@ -135,35 +138,23 @@ func ParseInfoResponse(plainResponse string) ([]Song, error) {
 		case "Album":
 			s.Album = value;
 		case "Pos":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return nil, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.Pos = conv;
 		case "Id":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return nil, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.Id = conv;
 		case "Time":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return nil, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.Time = conv;
 		case "Date":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return nil, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.Date = conv;
 		case "Duration":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return nil, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.Duration = conv*60;
+		}
+		if err != nil {
+			return nil, err;
 		}
 	}
 	queue = append(queue, s);
@@ -185,82 +176,53 @@ func ParseStatusResponse(plainResponse string) (Status, error) {
 		key := parts[0];
 		value := strings.TrimSpace(parts[1]);
 
+		var conv int;
+		var convf float64;
+		var err error;
+
 		switch key {
 		case "volume":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return Status{}, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.Volume = conv;
 		case "repeat":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return Status{}, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.Repeat = conv;
 		case "random":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return Status{}, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.Random = conv;
 		case "single":
 			s.Single = value;
 		case "consume":
 			s.Consume = value;
 		case "playlist":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return Status{}, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.Playlist = conv;
 	 	case "playlistlength":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return Status{}, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.Playlistlength = conv;
 	 	case "song":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return Status{}, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.Song = conv;
-
 	 	case "songid":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return Status{}, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.SongId = conv;
-
 	 	case "nextsong":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return Status{}, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.NextSong = conv;
-
 	 	case "nextsongid":
-			conv, err := strconv.Atoi(value);
-			if err != nil {
-				return Status{}, err;
-			}
+			conv, err = strconv.Atoi(value);
 			s.NextSongId = conv;
 		case "state":
 			s.State = value;
 		case "elapsed":
-			conv, err := strconv.ParseFloat(value, 64);
-			if err != nil {
-				return Status{}, err;
-			}
-			s.Elapsed = conv;
+			convf, err = strconv.ParseFloat(value, 64);
+			s.Elapsed = convf;
 		case "duration":
-			conv, err := strconv.ParseFloat(value, 64);
-			if err != nil {
-				return Status{}, err;
-			}
-			s.Duration = conv;
+			convf, err = strconv.ParseFloat(value, 64);
+			s.Duration = convf;
+		}
+		if err != nil {
+			return Status{}, err;
 		}
 	}
 	return s, nil;
