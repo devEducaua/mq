@@ -32,7 +32,7 @@ func PrintFormattedQueue(queue []mpd.Song) error {
 		if s.File == current.File {
 			marker = "*";
 		}
-		fmt.Printf("%-4v%1s %-*s - %-*s - %-*s\n", s.Pos, marker, maxTitleLength, s.Title, maxAlbumLength, s.Album, maxArtistLength, s.Artist);
+		fmt.Printf("%-4v%1s %v %-*s - %-*s - %-*s\n", s.Pos, marker, FormatDuration(float64(s.Time)), maxTitleLength, s.Title, maxAlbumLength, s.Album, maxArtistLength, s.Artist);
 	}
 	return nil;
 }
