@@ -14,7 +14,7 @@ type Song struct {
 	Artist string
 	Title string
 	Album string
-	Date int
+	Date string
 	Time int
 	Duration int
 	Pos int
@@ -147,8 +147,7 @@ func ParseInfoResponse(plainResponse string) ([]Song, error) {
 			conv, err = strconv.Atoi(value);
 			s.Time = conv;
 		case "Date":
-			conv, err = strconv.Atoi(value);
-			s.Date = conv;
+			s.Date = value;
 		case "Duration":
 			conv, err = strconv.Atoi(value);
 			s.Duration = conv*60;
