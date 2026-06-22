@@ -25,16 +25,26 @@ func ChangeState(state string, newMode string) error {
 		if err != nil {
 			return err;
 		}
-
 		switch state {
 		case "repeat":
-			mode = fromIntToState(1 - status.Repeat);
+			mode = strconv.Itoa(status.Repeat);
 		case "random":
-			mode = fromIntToState(1 - status.Random);
+			mode = strconv.Itoa(status.Random);
 		case "consume":
-			mode = fromIntToState(1 - int(status.Consume));
+			mode = status.Consume;
 		case "single":
-			mode = fromIntToState(1 - int(status.Single));
+			mode = status.Single;
+		}
+		switch mode {
+		case "0":
+			mode = "1";
+		case "1":
+			mode = "oneshot";
+		case "oneshot":
+			if state != "consume" && state != "single" {
+				return fmt.Errorf("oneshot option is only for consume and single states");
+			}
+			mode = "0";
 		}
 	}
 
@@ -43,17 +53,6 @@ func ChangeState(state string, newMode string) error {
 		return err;
 	}
 	return nil;
-}
-
-func fromIntToState(i int) string {
-	switch i {
-	case 0, 1:
-		return strconv.Itoa(i);
-	case -1:
-		return "oneshot";
-	default:
-		return "";
-	}
 }
 
 func SeeCommand(input string) error {

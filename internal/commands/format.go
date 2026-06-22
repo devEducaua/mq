@@ -59,7 +59,7 @@ func PrintFormattedStatus(plainResponse string) error {
 
 	fmt.Printf("%v - %v\n", artist, title);
 	fmt.Printf("%v/%v - %v/%v - state: %v\n", status.Song, status.Playlistlength, FormatDuration(status.Elapsed), FormatDuration(status.Duration), status.State);
-	fmt.Printf("repeat: %v, random: %v, single: %v, consume: %v\n", status.Repeat, status.Random, status.Single, status.Consume)
+	fmt.Printf("repeat: %v, random: %v, single: %v, consume: %v\n", status.Repeat, status.Random, status.Single, status.Consume);
 
 	return nil;
 }

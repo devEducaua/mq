@@ -21,19 +21,12 @@ type Song struct {
 	Id int
 }
 
-type State int;
-const (
-	StateOff State = iota
-	StateOn
-	StateOneshot
-)
-
 type Status struct {
 	Volume int
 	Repeat int
 	Random int
-	Single State
-	Consume State
+	Single string
+	Consume string
 	Playlist int
 	Playlistlength int
 	State string
@@ -212,31 +205,9 @@ func ParseStatusResponse(plainResponse string) (Status, error) {
 			}
 			s.Random = conv;
 		case "single":
-			var v State;
-			switch value {
-			case "0":
-				v = StateOff;
-			case "1":
-				v = StateOn;
-			case "oneshot":
-				v = StateOneshot;
-			default:
-				return Status{}, fmt.Errorf("invalid single state");
-			}
-			s.Single = v;
+			s.Single = value;
 		case "consume":
-			var v State;
-			switch value {
-			case "0":
-				v = StateOff;
-			case "1":
-				v = StateOn;
-			case "oneshot":
-				v = StateOneshot;
-			default:
-				return Status{}, fmt.Errorf("invalid consume state");
-			}
-			s.Consume = v;
+			s.Consume = value;
 		case "playlist":
 			conv, err := strconv.Atoi(value);
 			if err != nil {
