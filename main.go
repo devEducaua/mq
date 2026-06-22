@@ -94,6 +94,15 @@ func parseCommandLineArguments(argv []string) error {
 			}
 		}
 		err = commands.AlbumArt(notify);
+	case "plain":
+		if len(argv) < 2 {
+			return fmt.Errorf("command `%v` needs a arguments: request", command);
+		}
+		resp, err := mpd.Request(argv[1]);
+		if err != nil {
+			return err;
+		}
+		fmt.Println(resp);
 	case "--help":
 		err = commands.RunExternalCommand(true, "man", "mq(1)");
 	default:
