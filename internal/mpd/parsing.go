@@ -220,6 +220,8 @@ func ParseStatusResponse(plainResponse string) (Status, error) {
 				v = StateOn;
 			case "oneshot":
 				v = StateOneshot;
+			default:
+				return Status{}, fmt.Errorf("invalid single state");
 			}
 			s.Single = v;
 		case "consume":
@@ -231,8 +233,10 @@ func ParseStatusResponse(plainResponse string) (Status, error) {
 				v = StateOn;
 			case "oneshot":
 				v = StateOneshot;
+			default:
+				return Status{}, fmt.Errorf("invalid consume state");
 			}
-			s.Single = v;
+			s.Consume = v;
 		case "playlist":
 			conv, err := strconv.Atoi(value);
 			if err != nil {
