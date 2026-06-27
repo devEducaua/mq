@@ -254,3 +254,65 @@ func watchPlayer(msg chan<- string, errs chan<- error) {
 	}
 }
 
+func handleFilters(value, tag, expr string, not bool) (string, error) {
+	switch tag {
+	case "album-artist":
+		tag = "albumartist";
+	case "album", "artist", "track", "genre", "date":
+		break;
+	default:
+		return "", fmt.Errorf("not supported tag: %v", tag);
+	}
+
+	switch expr {
+	case "equal":
+		expr = "==";
+	case "starts-with":
+		expr = "starts_with";
+	case "contains":
+		break;
+	default:
+		return "", fmt.Errorf("not supported expression: %v", expr);
+	}
+
+	value = mpd.EscapeMpd(value);
+
+	filter := fmt.Sprintf("(%v %v %v)", tag, expr, value);
+
+	if not {
+		filter = fmt.Sprintf("(!%v)", filter);
+	}
+	return filter, nil;
+}
+
+func SearchFind(mode, tag, expr, value string) error {
+
+
+	f, err := handleFilters(value, tag, expr, false);
+	if err != nil {
+		return err;
+	}
+
+	req := fmt.Sprintf(`%v %v`, mode, f);
+	resp, err := mpd.Request(req);
+	if err != nil {
+		return err;
+	}
+
+	songs, err := mpd.ParseInfoResponse(resp);
+	if err != nil {
+		return err;
+	}
+
+	maxTitleLength := 0;
+	for _,s := range songs {
+		maxTitleLength = max(maxTitleLength, len(s.Title));
+	}
+
+	for _,s := range songs {
+		fmt.Printf("%-*v: %v\n", maxTitleLength, s.Title, s.File);
+	}
+
+	return nil;
+}
+
