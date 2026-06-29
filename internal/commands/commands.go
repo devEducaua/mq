@@ -258,7 +258,7 @@ func watchPlayer(msg chan<- string, errs chan<- error) {
 
 func handleFilters(value, tag, expr string, not bool) (string, error) {
 	switch tag {
-	case "album", "artist", "track", "genre", "date", "albumartist":
+	case "album", "artist", "title", "genre", "date", "albumartist":
 		break;
 	default:
 		return "", fmt.Errorf("not supported tag: %v", tag);
