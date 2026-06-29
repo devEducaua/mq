@@ -265,7 +265,11 @@ func handleFilters(value, tag, expr string, not bool) (string, error) {
 	}
 
 	switch expr {
-	case "==", "starts_with", "contains":
+	case "equals":
+		expr = "==";
+	case "startswith":
+		expr = "starts_with"
+	case"contains":
 		break;
 	default:
 		return "", fmt.Errorf("not supported expression: %v", expr);

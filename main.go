@@ -111,59 +111,17 @@ func parseCommandLineArguments(argv []string) error {
 
 		var (
 			not bool
-
-			album bool
-			artist bool
-			albumArtist bool
-			title bool
-			genre bool
-			date bool
-
-			startsWith bool
-			contains bool
-			equals bool
+			tag string
+			expr string
 		)
 
-		f.Var("starts-with", "", &startsWith);
-		f.Var("contains", "", &contains);
-		f.Var("equals", "", &equals);
+		f.Var("tag", "t", &tag);
+		f.Var("expr", "e", &expr);
 
 		f.Var("not", "n", &not);
 
-		f.Var("album", "", &album);
-		f.Var("artist", "", &artist);
-		f.Var("album-artist", "", &albumArtist);
-		f.Var("title", "", &title);
-		f.Var("genre", "", &genre);
-		f.Var("date", "", &date);
-
 		if err := f.Parse(argv); err != nil {
 			return err;
-		}
-
-		var tag string
-		switch {
-		case album:
-			tag = "album";
-		case artist:
-			tag = "artist";
-		case albumArtist:
-			tag = "album-artist";
-		case title:
-			tag = "title";
-		case genre:
-			tag = "genre";
-		case date:
-			tag = "date";
-		}
-		var expr string
-		switch {
-		case startsWith:
-			expr = "starts_with";
-		case contains:
-			expr = "contains";
-		case equals:
-			expr = "==";
 		}
 
 		value := argv[len(argv)-1];
