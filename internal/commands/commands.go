@@ -92,7 +92,7 @@ func ListCommand() error {
 	return nil;
 }
 
-func AlbumArt(notify bool) error {
+func AlbumArt(notify bool, output string) error {
 	msgs := make(chan string);
 	errs := make(chan error);
 
@@ -102,7 +102,7 @@ func AlbumArt(notify bool) error {
 		select {
 		case msg := <-msgs:
 			if msg == "changed: player\n" {
-				if err := writeImageToPath(); err != nil {
+				if err := writeImageToPath(output); err != nil {
 					return err;
 				}
 				if notify {
@@ -148,13 +148,15 @@ func RunExternalCommand(setStds bool, command ...string) error {
 	return nil;
 }
 
-func writeImageToPath() error {
+func writeImageToPath(output string) error {
 	config, err := config.GetConfig();
 	if err != nil {
 		return err;
 	}
 
-	outputPath := config.CoverOutputPath;
+	if output == "" {
+		output = config.CoverOutputPath;
+	}
 
 	s, err := mpd.GetCurrentSong();
 	if err != nil {
@@ -175,7 +177,7 @@ func writeImageToPath() error {
 			return err;
 		}
 	}
-	if err := os.WriteFile(outputPath, image, 0755); err != nil {
+	if err := os.WriteFile(output, image, 0555); err != nil {
 		return err;
 	}
 
@@ -256,20 +258,14 @@ func watchPlayer(msg chan<- string, errs chan<- error) {
 
 func handleFilters(value, tag, expr string, not bool) (string, error) {
 	switch tag {
-	case "album-artist":
-		tag = "albumartist";
-	case "album", "artist", "track", "genre", "date":
+	case "album", "artist", "track", "genre", "date", "albumartist":
 		break;
 	default:
 		return "", fmt.Errorf("not supported tag: %v", tag);
 	}
 
 	switch expr {
-	case "equal":
-		expr = "==";
-	case "starts-with":
-		expr = "starts_with";
-	case "contains":
+	case "==", "starts_with", "contains":
 		break;
 	default:
 		return "", fmt.Errorf("not supported expression: %v", expr);
@@ -285,15 +281,22 @@ func handleFilters(value, tag, expr string, not bool) (string, error) {
 	return filter, nil;
 }
 
-func SearchFind(mode, tag, expr, value string) error {
+func SearchFind(mode, tag, expr, value string, not bool) error {
+	if tag == "" {
+		tag = "album";
+	}
+	if expr == "" {
+		expr = "contains";
+	}
 
-
-	f, err := handleFilters(value, tag, expr, false);
+	f, err := handleFilters(value, tag, expr, not);
 	if err != nil {
 		return err;
 	}
 
-	req := fmt.Sprintf(`%v %v`, mode, f);
+	f = mpd.EscapeMpd(f);
+
+	req := fmt.Sprintf("%v %v", mode, f);
 	resp, err := mpd.Request(req);
 	if err != nil {
 		return err;
