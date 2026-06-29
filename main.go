@@ -6,6 +6,7 @@ import (
 	"errors"
 	"mq/internal/commands"
 	"mq/internal/config"
+	"mq/internal/flags"
 	"mq/internal/mpd"
 )
 
@@ -87,13 +88,86 @@ func parseCommandLineArguments(argv []string) error {
 			return err;
 		}
 	case "albumart":
-		notify := false;	
-		if len(argv) <= 2 {
-			if argv[1] == "--notify" {
-				notify = true;
-			}
+		var (
+			notify bool
+			output string
+		)
+		f := make(flags.Flags);
+
+		f.Var("notify", "n", &notify);
+		f.Var("output", "o", &output);
+
+		if err := f.Parse(argv); err != nil {
+			return err;
 		}
-		err = commands.AlbumArt(notify);
+
+		err = commands.AlbumArt(notify, output);
+	case "search", "find":
+		if len(argv) < 2 {
+			return fmt.Errorf("command `%v` needs a arguments: value", command);
+		}
+
+		f := make(flags.Flags);
+
+		var (
+			not bool
+
+			album bool
+			artist bool
+			albumArtist bool
+			title bool
+			genre bool
+			date bool
+
+			startsWith bool
+			contains bool
+			equals bool
+		)
+
+		f.Var("starts-with", "", &startsWith);
+		f.Var("contains", "", &contains);
+		f.Var("equals", "", &equals);
+
+		f.Var("not", "n", &not);
+
+		f.Var("album", "", &album);
+		f.Var("artist", "", &artist);
+		f.Var("album-artist", "", &albumArtist);
+		f.Var("title", "", &title);
+		f.Var("genre", "", &genre);
+		f.Var("date", "", &date);
+
+		if err := f.Parse(argv); err != nil {
+			return err;
+		}
+
+		var tag string
+		switch {
+		case album:
+			tag = "album";
+		case artist:
+			tag = "artist";
+		case albumArtist:
+			tag = "album-artist";
+		case title:
+			tag = "title";
+		case genre:
+			tag = "genre";
+		case date:
+			tag = "date";
+		}
+		var expr string
+		switch {
+		case startsWith:
+			expr = "starts_with";
+		case contains:
+			expr = "contains";
+		case equals:
+			expr = "==";
+		}
+
+		value := argv[len(argv)-1];
+		err = commands.SearchFind(command, tag, expr, value, not);
 	case "plain":
 		if len(argv) < 2 {
 			return fmt.Errorf("command `%v` needs a arguments: request", command);
