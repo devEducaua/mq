@@ -83,6 +83,12 @@ remove's a track or a range of tracks from the queue.
 write the albumart of the current song to a file.
 
 .TP
+.B find [--not] [--tag TAG] [--expr EXPR] VALUE
+
+.TP
+.B search [--not] [--tag TAG] [--expr EXPR] VALUE
+
+.TP
 .B update
 scan for updated files in the music directory.
 
@@ -99,6 +105,20 @@ run notification script when song changes.
 .TP
 .B --output, -o PATH
 write the albumart to the specified path.
+
+.TP
+.B --expr, -e EXPR
+the expression to use in the mpd filter, if not provided the contains expression is used.
+possibly expressions: contains, equals, startswith.
+
+.TP
+.B --tag, -t TAG
+the tag to use in the mpd filter, if not provided the album tag is used.
+possibly tags: album, artist, albumartist, genre, title, date.
+
+.TP
+.B --not, -n
+marks the expression as negative.
 
 .SH EXAMPLES
 
