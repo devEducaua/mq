@@ -285,7 +285,7 @@ func handleFilters(value, tag, expr string, not bool) (string, error) {
 	return filter, nil;
 }
 
-func SearchFind(mode, tag, expr, value string, not bool) error {
+func Find(tag, expr, value string, caseSensitive, not bool) error {
 	if tag == "" {
 		tag = "album";
 	}
@@ -300,6 +300,11 @@ func SearchFind(mode, tag, expr, value string, not bool) error {
 
 	f = mpd.EscapeMpd(f);
 
+	mode := "search";
+	if caseSensitive {
+		mode = "find";
+	}
+
 	req := fmt.Sprintf("%v %v", mode, f);
 	resp, err := mpd.Request(req);
 	if err != nil {
@@ -311,13 +316,8 @@ func SearchFind(mode, tag, expr, value string, not bool) error {
 		return err;
 	}
 
-	maxTitleLength := 0;
 	for _,s := range songs {
-		maxTitleLength = max(maxTitleLength, len(s.Title));
-	}
-
-	for _,s := range songs {
-		fmt.Printf("%-*v: %v\n", maxTitleLength, s.Title, s.File);
+		fmt.Printf("%v\n", s.File);
 	}
 
 	return nil;

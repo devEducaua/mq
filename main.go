@@ -102,7 +102,7 @@ func parseCommandLineArguments(argv []string) error {
 		}
 
 		err = commands.AlbumArt(notify, output);
-	case "search", "find":
+	case "find":
 		if len(argv) < 2 {
 			return fmt.Errorf("command `%v` needs a arguments: value", command);
 		}
@@ -111,12 +111,14 @@ func parseCommandLineArguments(argv []string) error {
 
 		var (
 			not bool
+			caseSensitive bool
 			tag string
 			expr string
 		)
 
 		f.Var("tag", "t", &tag);
 		f.Var("expr", "e", &expr);
+		f.Var("sensitive", "s", &caseSensitive);
 
 		f.Var("not", "n", &not);
 
@@ -125,7 +127,7 @@ func parseCommandLineArguments(argv []string) error {
 		}
 
 		value := argv[len(argv)-1];
-		err = commands.SearchFind(command, tag, expr, value, not);
+		err = commands.Find(tag, expr, value, caseSensitive, not);
 	case "plain":
 		if len(argv) < 2 {
 			return fmt.Errorf("command `%v` needs a arguments: request", command);
