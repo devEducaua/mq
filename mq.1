@@ -79,9 +79,8 @@ FROM can be an id or a range.
 remove's a track or a range of tracks from the queue.
 
 .TP
-.B albumart [--notify]
+.B albumart [--notify] [--output PATH]
 write the albumart of the current song to a file.
-if --notify is passed, it runs a notify script when the song changes.
 
 .TP
 .B update
@@ -90,6 +89,16 @@ scan for updated files in the music directory.
 .TP
 .B --help
 opens this manpage.
+
+.SH OPTIONS
+
+.TP
+.B --notify, -n
+run notification script when song changes.
+
+.TP
+.B --output, -o PATH
+write the albumart to the specified path.
 
 .SH EXAMPLES
 
