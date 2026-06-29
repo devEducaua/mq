@@ -83,10 +83,7 @@ remove's a track or a range of tracks from the queue.
 write the albumart of the current song to a file.
 
 .TP
-.B find [--not] [--tag TAG] [--expr EXPR] VALUE
-
-.TP
-.B search [--not] [--tag TAG] [--expr EXPR] VALUE
+.B find [--sensitive] [--not] [--tag TAG] [--expr EXPR] VALUE
 
 .TP
 .B update
@@ -119,6 +116,10 @@ possibly tags: album, artist, albumartist, genre, title, date.
 .TP
 .B --not, -n
 marks the expression as negative.
+
+.TP
+.B --sensitive, -s
+make the filter case sensitive.
 
 .SH EXAMPLES
 
